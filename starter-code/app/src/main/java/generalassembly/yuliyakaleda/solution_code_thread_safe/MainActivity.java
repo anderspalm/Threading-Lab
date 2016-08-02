@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity{
     if (requestCode == PICK_IMAGE_REQUEST && resultCode == MainActivity.RESULT_OK && null != data) {
       Uri selectedImage = data.getData();
       //TODO: Create the async task and execute it
+      ImageProcessingAsyncTask task = new ImageProcessingAsyncTask();
+      task.execute(selectedImage);
     }
   }
 
@@ -61,12 +63,10 @@ public class MainActivity extends AppCompatActivity{
     startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
   }
 
-  //TODO: Fill in the parameter types
-  private class ImageProcessingAsyncTask extends AsyncTask<> {
+  private class ImageProcessingAsyncTask extends AsyncTask<Uri, Integer, Bitmap> {
 
-    //TODO: Fill in the parameter type
     @Override
-    protected Bitmap doInBackground() {
+    protected Bitmap doInBackground(Uri... params) {
       try {
         Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(params[0]));
         return invertImageColors(bitmap);
@@ -76,37 +76,38 @@ public class MainActivity extends AppCompatActivity{
       return null;
     }
 
-    //TODO: Fill in the parameter type
     @Override
-    protected void onProgressUpdate() {
+    protected void onProgressUpdate(Integer... values) {
       super.onProgressUpdate(values);
-      //TODO: Update the progress bar
+      mProgressBar.setProgress(values[0]);
     }
 
-    //TODO: Fill in the parameter type
     @Override
-    protected void onPostExecute() {
-      //TODO: Complete this method
+    protected void onPostExecute(Bitmap bitmap) {
+      mImageView.setImageBitmap(bitmap);
     }
 
     @Override
     protected void onPreExecute() {
       super.onPreExecute();
-      //TODO: Complete this method
+      mImageView.setImageDrawable(getResources().getDrawable(R.drawable.placeholder));
+      mProgressBar.setVisibility(View.VISIBLE);
     }
 
     private Bitmap invertImageColors(Bitmap bitmap){
       //You must use this mutable Bitmap in order to modify the pixels
-      Bitmap mutableBitmap = bitmap.copy(bitmap.getConfig(),true);
+      Bitmap mutableBitmap = bitmap.copy(bitmap.getConfig(),falses);
 
       //Loop through each pixel, and invert the colors
       for (int i = 0; i < mutableBitmap.getWidth(); i++) {
         for(int j = 0; j < mutableBitmap.getHeight(); j++){
-          //TODO: Get the Red, Green, and Blue values for the current pixel, and reverse them
-          //TODO: Set the current pixel's color to the new, reversed value
+          int inverted = 0xFFFFFF - mutableBitmap.getPixel(i,j);
+          mutableBitmap.setPixel(i,j, inverted);
         }
         int progressVal = Math.round((long) (100*(i/(1.0*mutableBitmap.getWidth()))));
-        //TODO: Update the progress bar. progressVal is the current progress value out of 100
+        for(int j = 0; j < progressVal; j++) {
+          publishProgress(progressVal);
+        }
       }
       return mutableBitmap;
     }
