@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity{
 
     private Bitmap invertImageColors(Bitmap bitmap){
       //You must use this mutable Bitmap in order to modify the pixels
-      Bitmap mutableBitmap = bitmap.copy(bitmap.getConfig(),falses);
+      Bitmap mutableBitmap = bitmap.copy(bitmap.getConfig(),true);
 
       //Loop through each pixel, and invert the colors
       for (int i = 0; i < mutableBitmap.getWidth(); i++) {
